@@ -2,5 +2,8 @@ import os
 
 class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', 'your_secret_key')
+    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL') 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', 'postgresql://user:password@localhost/db_name')
+
+    SUPABASE_URL = os.getenv('SUPABASE_URL')
+    SUPABASE_KEY = os.getenv('SUPABASE_KEY')

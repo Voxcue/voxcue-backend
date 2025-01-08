@@ -1,8 +1,7 @@
-from flask import jsonify, request
-from . import api_bp
+from flask import Blueprint
 
+api_bp = Blueprint('api', __name__, url_prefix='/api')
 
-@api_bp.route('/hello', methods=['GET'])
-def get_items():
-    return jsonify("hello")
-
+@api_bp.route('/')
+def index():
+    return {"message": "hello"}
