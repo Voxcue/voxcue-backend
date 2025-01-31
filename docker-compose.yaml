@@ -1,0 +1,32 @@
+services:
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5001:5000"
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    working_dir: /app/backend-api  # Set working directory to backend-api
+    command: python run.py
+
+  celery:
+    build: .
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    working_dir: /app/backend-api  # Ensure Celery runs inside backend-api
+    environment:
+      - PYTHONPATH=/app/backend-api  # Add backend-api to PYTHONPATH
+    command: celery -A run.celery worker --loglevel=info
+    depends_on:
+      - redis
+      - web
