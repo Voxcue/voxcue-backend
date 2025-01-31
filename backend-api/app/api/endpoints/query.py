@@ -9,13 +9,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from supabase import create_client
-import os
 
 # Initialize Supabase client
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-
 
 query = Blueprint('query', __name__)
 
@@ -27,11 +25,25 @@ def ask_question(current_user):
     question = data.get("question")
     
     embedding_model = OpenAIEmbeddings(openai_api_key=os.getenv("OPENAI_API_KEY"))
-    retriever = SupabaseRetriever(supabase, current_user.id, embedding_model)
+    retriever = SupabaseRetriever(supabase, str(current_user.id), embedding_model)
+
     qa_pipeline = create_rag_pipeline(retriever)
     
     try:
-        result = qa_pipeline.run(question)
-        return jsonify({"answer": result["result"], "sources": result["source_documents"]}), 200
+        response = qa_pipeline.invoke(question)
+
+        # Extracting the result text and converting source_documents to a serializable format
+        result_text = response.get("result", "No answer found")
+        
+        # Convert the source_documents (Langchain Document objects) into a serializable format
+        source_docs = [
+            {
+                "content": doc.page_content,
+                "metadata": doc.metadata
+            }
+            for doc in response.get("source_documents", [])
+        ]
+
+        return jsonify({"answer": result_text, "sources": source_docs}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500

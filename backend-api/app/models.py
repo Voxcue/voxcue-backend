@@ -1,3 +1,4 @@
+from pgvector.sqlalchemy import Vector
 from datetime import datetime
 from app import db
 
@@ -7,12 +8,12 @@ class User(db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(120), nullable=False)
 
-# DiaryEntry model to store diary entries and embeddings
+# DiaryEntry model with vector search support
 class DiaryEntry(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     content = db.Column(db.Text, nullable=False)
-    embedding = db.Column(db.PickleType, nullable=False)  # Store the embeddings
+    embedding = db.Column(Vector(1536), nullable=False)  # Store embedding as a vector
     date = db.Column(db.Date, nullable=False, default=datetime.utcnow)
 
     user = db.relationship('User', backref=db.backref('diary_entries', lazy=True))
