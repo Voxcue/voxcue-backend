@@ -1,6 +1,7 @@
 from flask import Flask
 from app.extensions import db, migrate
 from celery import Celery
+from flask_cors import CORS
 
 
 def make_celery(app):
@@ -26,9 +27,13 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
 
+    # Enable CORS for all routes
+    CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
+
     app.register_blueprint(auth, url_prefix="/auth")
     app.register_blueprint(diary, url_prefix="/api")
     app.register_blueprint(query, url_prefix="/api")
 
     celery = make_celery(app)
     return app, celery
+
