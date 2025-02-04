@@ -1,5 +1,6 @@
 from flask import Flask
 from app.extensions import db, migrate
+
 from app.auth.routes import auth_bp
 from celery import Celery,shared_task
 
@@ -20,6 +21,9 @@ def make_celery(app):
     celery.Task = ContextTask
     return celery
 
+from app.auth.auth import auth
+from app.api.endpoints.diary import diary
+from app.api.endpoints.query import query
 
 def create_app():
     app = Flask(__name__)
@@ -32,7 +36,9 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
 
-    app.register_blueprint(auth_bp)
+    app.register_blueprint(auth, url_prefix="/auth")
+    app.register_blueprint(diary, url_prefix="/api")
+    app.register_blueprint(query, url_prefix="/api")
 
     celery = make_celery(app)
 
