@@ -4,6 +4,8 @@ from typing import List, Any
 import os
 from supabase import create_client
 from pydantic import Field, ConfigDict
+from dotenv import load_dotenv
+load_dotenv()
 
 # Initialize Supabase client
 SUPABASE_URL = os.getenv("SUPABASE_URL")

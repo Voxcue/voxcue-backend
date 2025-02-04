@@ -1,9 +1,11 @@
 from flask import Flask
 from app.extensions import db, migrate
-
 from app.auth.routes import auth_bp
 from celery import Celery,shared_task
-
+from flask_cors import CORS
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 def make_celery(app):
     celery = Celery(
@@ -36,6 +38,9 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
 
+    # Enable CORS for all routes
+    CORS(app, resources={r"/*": {"origins":os.getenv('FRONTEND_PATH')}})
+
     app.register_blueprint(auth, url_prefix="/auth")
     app.register_blueprint(diary, url_prefix="/api")
     app.register_blueprint(query, url_prefix="/api")
@@ -61,3 +66,4 @@ def create_app():
         return a + b
 
     return app, celery
+
