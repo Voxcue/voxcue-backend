@@ -17,7 +17,7 @@ services:
     working_dir: /app/backend-api  # Set working directory to backend-api
     command: python run.py
 
-  celery:
+  celery-worker:
     build: .
     env_file:
       - .env
@@ -27,6 +27,20 @@ services:
     environment:
       - PYTHONPATH=/app/backend-api  # Add backend-api to PYTHONPATH
     command: celery -A run.celery worker --loglevel=info
+    depends_on:
+      - redis
+      - web
+
+  celery-beat:
+    build: .
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    working_dir: /app/backend-api  # Ensure Celery runs inside backend-api
+    environment:
+      - PYTHONPATH=/app/backend-api  # Add backend-api to PYTHONPATH
+    command: celery -A run.celery beat --loglevel=info
     depends_on:
       - redis
       - web
