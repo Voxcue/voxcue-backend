@@ -29,24 +29,27 @@ from app.api.endpoints.query import query
 
 def create_app():
     app = Flask(__name__)
-    app.config.from_object("app.config.Config")
-
+    app.config.from_object("app.config.Config")  
+    app.secret_key = os.getenv("SECRET_KEY", "super-secret-key")
     # Use new-style configuration keys
     app.config["broker_url"] = "redis://redis:6379/0"
     app.config["result_backend"] = "redis://redis:6379/0"
 
+
     db.init_app(app)
     migrate.init_app(app, db)
 
-    # Enable CORS for all routes
-    CORS(app, resources={r"/*": {"origins":os.getenv('FRONTEND_PATH')}})
+    CORS(
+        app, 
+        resources={r"/*": {"origins": os.getenv("FRONTEND_URL", "http://localhost:3000")}},
+        supports_credentials=True
+    )
 
     app.register_blueprint(auth, url_prefix="/auth")
     app.register_blueprint(diary, url_prefix="/api")
     app.register_blueprint(query, url_prefix="/api")
 
     celery = make_celery(app)
-
     celery.conf.beat_schedule = {
         "run-every-30-seconds": {
             "task": "app.auth.tasks.add_together",
@@ -65,5 +68,6 @@ def create_app():
         """Simple arithmetic task for testing"""
         return a + b
 
-    return app, celery
+    return app
+
 

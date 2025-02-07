@@ -20,7 +20,7 @@ class SupabaseRetriever(BaseRetriever):
     model_config = ConfigDict(arbitrary_types_allowed=True) 
 
     def __init__(self, supabase_client, user_id: str, embedding_model):
-        # Ensure that user_id is converted to an integer
+
         user_id = int(user_id)
         super().__init__(
             supabase_client=supabase_client,
@@ -32,9 +32,8 @@ class SupabaseRetriever(BaseRetriever):
         """Fetch relevant documents from Supabase using vector search."""
         query_embedding = self.embedding_model.embed_query(query)
 
-        # Ensure user_id is correctly passed as an integer in the rpc call
         response = self.supabase_client.rpc(
-    "match_embedding",  
+    "match_embedding2",  
     {"input_user_id": self.user_id, "query_embedding": query_embedding, "top_k": 3}
 ).execute()
 

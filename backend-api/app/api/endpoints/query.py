@@ -31,11 +31,8 @@ def ask_question(current_user):
     
     try:
         response = qa_pipeline.invoke(question)
-
-        # Extracting the result text and converting source_documents to a serializable format
         result_text = response.get("result", "No answer found")
-        
-        # Convert the source_documents (Langchain Document objects) into a serializable format
+
         source_docs = [
             {
                 "content": doc.page_content,
