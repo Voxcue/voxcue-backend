@@ -1,3 +1,4 @@
+import json
 from langchain.schema import Document, BaseRetriever
 from langchain.embeddings.openai import OpenAIEmbeddings
 from typing import List, Any
@@ -20,7 +21,6 @@ class SupabaseRetriever(BaseRetriever):
     model_config = ConfigDict(arbitrary_types_allowed=True) 
 
     def __init__(self, supabase_client, user_id: str, embedding_model):
-
         user_id = int(user_id)
         super().__init__(
             supabase_client=supabase_client,
@@ -33,19 +33,19 @@ class SupabaseRetriever(BaseRetriever):
         query_embedding = self.embedding_model.embed_query(query)
 
         response = self.supabase_client.rpc(
-    "match_embedding2",  
-    {"input_user_id": self.user_id, "query_embedding": query_embedding, "top_k": 3}
-).execute()
-
+            "match_embedding2",  
+            {"input_user_id": self.user_id, "query_embedding": query_embedding, "top_k": 3}
+        ).execute()
 
         if response:
             return [
-            Document(
-                page_content=result["content"],
-                metadata={"id": result["id"], "similarity": result["similarity"]}
-            )
-            for result in response.data
-        ]
+                Document(
+                    page_content=json.dumps(result["content"]) if isinstance(result["content"], dict) else result["content"],
+                    metadata={"id": result["id"], "similarity": result["similarity"]}
+                )
+                for result in response.data
+            ]
+        return []
 
     async def _aget_relevant_documents(self, query: str) -> List[Document]:
         """Asynchronous version of getting relevant documents."""

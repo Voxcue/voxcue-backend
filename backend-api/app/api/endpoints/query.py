@@ -17,7 +17,6 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 query = Blueprint('query', __name__)
 
-# Ask a question based on the diary entries
 @query.route('/query', methods=['POST'])
 @token_required
 def ask_question(current_user):
@@ -35,7 +34,7 @@ def ask_question(current_user):
 
         source_docs = [
             {
-                "content": doc.page_content,
+                "content":doc.page_content,
                 "metadata": doc.metadata
             }
             for doc in response.get("source_documents", [])
@@ -43,4 +42,5 @@ def ask_question(current_user):
 
         return jsonify({"answer": result_text, "sources": source_docs}), 200
     except Exception as e:
+        print(e)
         return jsonify({"error": str(e)}), 500
