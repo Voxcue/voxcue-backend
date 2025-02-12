@@ -27,9 +27,18 @@ class SnippetSession(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     responses = db.Column(MutableList.as_mutable(db.JSON), nullable=False, default=[])
     question_count = db.Column(db.Integer, default=0)
-    active = db.Column(db.Boolean, default=True)  # Indicates if the session is ongoing
+    active = db.Column(db.Boolean, default=True)  
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     def __repr__(self):
         return f"<SnippetSession user_id={self.user_id} active={self.active}>"
+
+
+class DiaryEntry(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    diary_content = db.Column(db.Text, nullable=False)
+    date = db.Column(db.Date, nullable=False, default=datetime.utcnow)
+
+    user = db.relationship('User', backref=db.backref('diary_entries', lazy=True))

@@ -48,8 +48,8 @@ def create_app():
     app.register_blueprint(diary, url_prefix="/api")
     app.register_blueprint(query, url_prefix="/api")
 
-    celery = make_celery(app)
-    celery.conf.beat_schedule = {
+    app.celery = make_celery(app)
+    app.celery.conf.beat_schedule = {
         "run-every-30-seconds": {
             "task": "app.auth.tasks.add_together",
             "schedule": 30.0,
