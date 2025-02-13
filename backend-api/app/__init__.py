@@ -7,6 +7,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 def make_celery(app):
+    print("Broker URL:", app.config["broker_url"])
+    print("Result Backend:", app.config["result_backend"])
     celery = Celery(
         app.import_name,
         broker=app.config["broker_url"],
@@ -20,6 +22,7 @@ def make_celery(app):
                 return self.run(*args, **kwargs)
 
     celery.Task = ContextTask
+    celery.user_options = {}
     return celery
 
 from app.auth.auth import auth
@@ -34,6 +37,7 @@ def create_app():
     app.config["broker_url"] = "redis://redis:6379/0"
     app.config["result_backend"] = "redis://redis:6379/0"
 
+    #
 
     db.init_app(app)
     migrate.init_app(app, db)
@@ -49,16 +53,17 @@ def create_app():
     app.register_blueprint(query, url_prefix="/api")
 
     app.celery = make_celery(app)
-    app.celery.conf.beat_schedule = {
-        "run-every-30-seconds": {
-            "task": "app.auth.tasks.add_together",
-            "schedule": 30.0,
-        },
-        "run-every-5-seconds": {
-            "task": "app.auth.tasks.add_together",
-            "schedule": 5.0,
-        },
-    }
+
+    # app.celery.conf.beat_schedule = {
+    #     "run-every-30-seconds": {
+    #         "task": "app.auth.tasks.add_together",
+    #         "schedule": 30.0,
+    #     },
+    #     "run-every-5-seconds": {
+    #         "task": "app.auth.tasks.add_together",
+    #         "schedule": 5.0,
+    #     },
+    # }
 
 
     # example beat Process

@@ -1,13 +1,12 @@
 from celery import shared_task
-from app import create_app ,db 
-from app.rag.diaryCreate import update_or_create_diary_entry
-from app.rag.todo import extract_todo_items
 from app.models import TodoItem, Snippet
 import json
-app = create_app()
 
 @shared_task(name="app.tasks.update_diary_entry_task")
 def update_diary_entry_task(user_id, date, snippet_content):
+    from app import create_app ,db 
+    from app.rag.diaryCreate import update_or_create_diary_entry
+    app = create_app()
     with app.app_context():
         diary_entry = update_or_create_diary_entry(user_id, date, snippet_content)
         return diary_entry.id
@@ -16,6 +15,10 @@ def update_diary_entry_task(user_id, date, snippet_content):
 
 @shared_task(name="app.tasks.update_todo_list_task")
 def update_todo_list_task(user_id, date):
+    from app import create_app ,db 
+    from app.rag.todo import extract_todo_items
+    app = create_app()
+
     with app.app_context():
         snippets = Snippet.query.filter_by(user_id=user_id).all()
         snippet_texts = []
@@ -39,3 +42,6 @@ def update_todo_list_task(user_id, date):
         
         db.session.commit()
         return todo_items
+@shared_task(name="app.tasks.test_task")
+def test_task(a, b):
+    return a + b

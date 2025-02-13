@@ -8,6 +8,7 @@ from langchain.embeddings.openai import OpenAIEmbeddings
 from openai import OpenAI
 from dotenv import load_dotenv
 from app.rag.diaryCreate import update_or_create_diary_entry
+from app.tasks import update_diary_entry_task
 
 
 load_dotenv()
@@ -94,7 +95,7 @@ def interactive_snippet_entry(current_user):
             embedding=embedding,
             date=data.get("date", "Unknown")
         )
-        update_or_create_diary_entry(user_id,data.get("date"),new_entry)
+        update_or_create_diary_entry(user_id,data.get("date"),structured_entry)
         db.session.add(new_entry)
         # Mark the session as inactive
         snippet_session.active = False
@@ -111,7 +112,7 @@ def interactive_snippet_entry(current_user):
             embedding=embedding,
             date=data.get("date", "Unknown")
         )
-        update_or_create_diary_entry(user_id,data.get("date"),new_entry)
+        update_or_create_diary_entry(user_id,data.get("date"),structured_entry)
         db.session.add(new_entry)
         snippet_session.active = False
         db.session.commit()

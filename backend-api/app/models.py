@@ -42,3 +42,13 @@ class DiaryEntry(db.Model):
     date = db.Column(db.Date, nullable=False, default=datetime.utcnow)
 
     user = db.relationship('User', backref=db.backref('diary_entries', lazy=True))
+
+class TodoItem(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    description = db.Column(db.String(255), nullable=False)
+    completed = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f"<TodoItem {self.description} for user {self.user_id}>"
