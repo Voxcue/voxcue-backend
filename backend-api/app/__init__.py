@@ -54,16 +54,16 @@ def create_app():
 
     app.celery = make_celery(app)
 
-    # app.celery.conf.beat_schedule = {
-    #     "run-every-30-seconds": {
-    #         "task": "app.auth.tasks.add_together",
-    #         "schedule": 30.0,
-    #     },
-    #     "run-every-5-seconds": {
-    #         "task": "app.auth.tasks.add_together",
-    #         "schedule": 5.0,
-    #     },
-    # }
+    app.celery.conf.beat_schedule = {
+        "run-every-30-seconds": {
+            "task": "app.auth.tasks.add_together",
+            "schedule": 30.0,
+        },
+        "run-every-5-seconds": {
+            "task": "app.auth.tasks.add_together",
+            "schedule": 5.0,
+        },
+    }
 
 
     # example beat Process
