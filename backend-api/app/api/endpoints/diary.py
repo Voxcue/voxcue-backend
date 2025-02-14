@@ -2,9 +2,9 @@ import os
 import json
 from flask import Blueprint, request, jsonify
 from app import db
-from app.models import Snippet, SnippetSession,DiaryEntry
+from app.models import Snippet, SnippetSession, DiaryEntry
 from app.auth.auth import token_required
-from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain_community.embeddings import OpenAIEmbeddings
 from openai import OpenAI
 from dotenv import load_dotenv
 from app.rag.diaryCreate import update_or_create_diary_entry
@@ -20,6 +20,7 @@ openai_client = OpenAI(api_key=openai_api_key)
 
 MAX_QUESTIONS = 3
 
+
 def get_follow_up_question(responses):
     """Generate a concise, first-person follow-up question based on the current diary responses."""
     prompt = f"""
@@ -29,17 +30,14 @@ def get_follow_up_question(responses):
     If I have already provided all the necessary details for a well-structured diary entry, simply return the word "DONE".
     """
     response = openai_client.chat.completions.create(
-        model="gpt-4",
-        messages=[{"role": "system", "content": prompt}]
+        model="gpt-4", messages=[{"role": "system", "content": prompt}]
     )
     return response.choices[0].message.content.strip()
 
 
-
-
 def finalize_snippet(responses, date):
     """Generate a structured snippet from the collected responses and create its embedding.
-       Return the snippet as a JSON object."""
+    Return the snippet as a JSON object."""
     structure_prompt = f"""
     Given the following responses: {responses} and the date: {date}, generate a well-structured diary snippet.
     The snippet must be formatted as a valid JSON object with exactly these keys:
@@ -52,20 +50,20 @@ def finalize_snippet(responses, date):
     {{"Date": "2025-02-05", "Mood": "Happy", "Events": "I got promoted at work.", "Reflections": "I feel excited and optimistic about the future."}}
     """
     structured_response = openai_client.chat.completions.create(
-        model="gpt-4",
-        messages=[{"role": "system", "content": structure_prompt}]
+        model="gpt-4", messages=[{"role": "system", "content": structure_prompt}]
     )
     structured_entry = structured_response.choices[0].message.content.strip()
-    
+
     try:
         structured_entry_json = json.loads(structured_entry)
     except Exception as e:
         print("Error parsing structured entry to JSON:", e)
         structured_entry_json = structured_entry
-    
+
     embedding_model = OpenAIEmbeddings(openai_api_key=openai_api_key)
     embedding = embedding_model.embed_query(structured_entry)
     return structured_entry_json, embedding
+
 
 @diary.route("/diary", methods=["POST"])
 @token_required
@@ -77,9 +75,13 @@ def interactive_snippet_entry(current_user):
     if not content:
         return jsonify({"error": "No content provided"}), 400
 
-    snippet_session = SnippetSession.query.filter_by(user_id=user_id, active=True).first()
+    snippet_session = SnippetSession.query.filter_by(
+        user_id=user_id, active=True
+    ).first()
     if not snippet_session:
-        snippet_session = SnippetSession(user_id=user_id, responses=[], question_count=0, active=True)
+        snippet_session = SnippetSession(
+            user_id=user_id, responses=[], question_count=0, active=True
+        )
         db.session.add(snippet_session)
         db.session.commit()
 
@@ -88,14 +90,16 @@ def interactive_snippet_entry(current_user):
     db.session.commit()  # Save changes
 
     if snippet_session.question_count >= MAX_QUESTIONS:
-        structured_entry, embedding = finalize_snippet(snippet_session.responses, data.get("date", "Unknown"))
+        structured_entry, embedding = finalize_snippet(
+            snippet_session.responses, data.get("date", "Unknown")
+        )
         new_entry = Snippet(
             user_id=user_id,
             content=structured_entry,
             embedding=embedding,
-            date=data.get("date", "Unknown")
+            date=data.get("date", "Unknown"),
         )
-        update_diary_entry_task.delay(user_id,data.get("date"),structured_entry)
+        update_diary_entry_task.delay(user_id, data.get("date"), structured_entry)
         db.session.add(new_entry)
         # Mark the session as inactive
         snippet_session.active = False
@@ -105,14 +109,16 @@ def interactive_snippet_entry(current_user):
     print(snippet_session.responses)
     next_question = get_follow_up_question(snippet_session.responses)
     if next_question.strip().upper() == "DONE":
-        structured_entry, embedding = finalize_snippet(snippet_session.responses, data.get("date", "Unknown"))
+        structured_entry, embedding = finalize_snippet(
+            snippet_session.responses, data.get("date", "Unknown")
+        )
         new_entry = Snippet(
             user_id=user_id,
             content=structured_entry,
             embedding=embedding,
-            date=data.get("date", "Unknown")
+            date=data.get("date", "Unknown"),
         )
-        update_diary_entry_task.delay(user_id,data.get("date"),structured_entry)
+        update_diary_entry_task.delay(user_id, data.get("date"), structured_entry)
         db.session.add(new_entry)
         snippet_session.active = False
         db.session.commit()
