@@ -32,7 +32,7 @@ services:
     working_dir: /app/backend-api # Ensure Celery runs inside backend-api
     environment:
       - PYTHONPATH=/app/backend-api # Add backend-api to PYTHONPATH
-    command: celery -A celery_app.celery worker --loglevel=info
+    command: celery -A celery_app.celery worker --loglevel=info --pool=solo
     depends_on:
       - redis
       - web
@@ -48,7 +48,7 @@ services:
     working_dir: /app/backend-api # Ensure Celery runs inside backend-api
     environment:
       - PYTHONPATH=/app/backend-api # Add backend-api to PYTHONPATH
-    command: celery -A celery_app.celery beat --loglevel=info
+    command: celery -A celery_app.celery beat --loglevel=info --pool=solo
     depends_on:
       - redis
       - web
