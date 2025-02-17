@@ -3,7 +3,7 @@ from flask import Blueprint, request, jsonify
 from app.auth.auth import token_required
 from app.rag.retriever import SupabaseRetriever
 from app.rag.pipeline import create_rag_pipeline
-from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain_community.embeddings import OpenAIEmbeddings
 
 from dotenv import load_dotenv
 load_dotenv()

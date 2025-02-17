@@ -1,15 +1,17 @@
 from langchain.chains import RetrievalQA
-from langchain.llms import OpenAI
+from langchain_community.llms import OpenAI
 from langchain.prompts import PromptTemplate
-from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain_community.embeddings import OpenAIEmbeddings
 import os
 
 # Load environment variables
 from dotenv import load_dotenv
+
 load_dotenv()
 
 # Initialize OpenAI API key
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
 
 # Create RAG pipeline
 def create_rag_pipeline(retriever, retriever_k=3):
@@ -18,7 +20,7 @@ def create_rag_pipeline(retriever, retriever_k=3):
         template=(
             "You are a helpful daily assistant. Use the following context, derived from the user's previous diary entries, to answer the question."
             "\n\nContext (Diary Entries): {context}\n\nUser's Question: {question}\n\nYour Response:"
-        )
+        ),
     )
 
     qa_chain = RetrievalQA.from_chain_type(

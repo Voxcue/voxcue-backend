@@ -1,6 +1,6 @@
 import json
 from langchain.schema import Document, BaseRetriever
-from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain_community.embeddings import OpenAIEmbeddings
 from typing import List, Any
 import os
 from supabase import create_client

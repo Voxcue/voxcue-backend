@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 from openai import OpenAI
-from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain_community.embeddings import OpenAIEmbeddings
 from app import db
 from app.models import DiaryEntry
 from dotenv import load_dotenv
