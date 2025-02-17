@@ -2,11 +2,14 @@ import os
 import json
 from flask import Blueprint, request, jsonify
 from app import db
-from app.models import Snippet, SnippetSession  
+from app.models import Snippet, SnippetSession,DiaryEntry
 from app.auth.auth import token_required
 from langchain.embeddings.openai import OpenAIEmbeddings
 from openai import OpenAI
 from dotenv import load_dotenv
+from app.rag.diaryCreate import update_or_create_diary_entry
+from app.tasks import update_diary_entry_task
+
 
 load_dotenv()
 
@@ -15,7 +18,7 @@ diary = Blueprint("diary", __name__)
 openai_api_key = os.getenv("OPENAI_API_KEY")
 openai_client = OpenAI(api_key=openai_api_key)
 
-MAX_QUESTIONS = 5 
+MAX_QUESTIONS = 3
 
 def get_follow_up_question(responses):
     """Generate a concise, first-person follow-up question based on the current diary responses."""
@@ -92,6 +95,7 @@ def interactive_snippet_entry(current_user):
             embedding=embedding,
             date=data.get("date", "Unknown")
         )
+        update_or_create_diary_entry(user_id,data.get("date"),structured_entry)
         db.session.add(new_entry)
         # Mark the session as inactive
         snippet_session.active = False
@@ -108,9 +112,20 @@ def interactive_snippet_entry(current_user):
             embedding=embedding,
             date=data.get("date", "Unknown")
         )
+        update_or_create_diary_entry(user_id,data.get("date"),structured_entry)
         db.session.add(new_entry)
         snippet_session.active = False
         db.session.commit()
         return jsonify({"message": "Snippet saved successfully!"}), 201
 
     return jsonify({"question": next_question})
+
+
+@diary.route("/getdiary", methods=["POST"])
+@token_required
+def get_diary(current_user):
+    data = request.get_json()
+    user_id = current_user.id
+    date = data.get("date")
+    diary_entry = DiaryEntry.query.filter_by(user_id=user_id, date=date).first()
+    return jsonify({"diary_entry": diary_entry})
