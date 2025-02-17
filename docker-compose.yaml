@@ -6,14 +6,14 @@ services:
 
   web:
     build:
-      context: .
+      context: ./backend-api
       dockerfile: Dockerfile
     ports:
       - "5000:5000"
     env_file:
       - backend-api/.env
     volumes:
-      - .:/app
+      - ./backend-api:/app
     working_dir: /app/backend-api # Set working directory to backend-api
     command: flask run --host=0.0.0.0 --port=5000
     depends_on:
@@ -24,7 +24,7 @@ services:
     env_file:
       - backend-api/.env
     volumes:
-      - .:/app
+      - ./backend-api:/app
     working_dir: /app/backend-api # Ensure Celery runs inside backend-api
     environment:
       - PYTHONPATH=/app/backend-api # Add backend-api to PYTHONPATH
@@ -38,7 +38,7 @@ services:
     env_file:
       - backend-api/.env
     volumes:
-      - .:/app
+      - ./backend-api:/app
     working_dir: /app/backend-api # Ensure Celery runs inside backend-api
     environment:
       - PYTHONPATH=/app/backend-api # Add backend-api to PYTHONPATH
